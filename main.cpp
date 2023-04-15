@@ -1,46 +1,47 @@
 #include <iostream>
 #include <cctype>
+#include <cstring>
 using namespace std;
 
 const int MAXN = 10000;
 const int INF = 1e9;
 
-int w = 0;
-int h = 0;
-
 int adj[MAXN][MAXN]; // adjacency matrix representation
 int dist[MAXN]; // distance array to store the minimum distance from source to all vertices
 bool visited[MAXN]; // visited array to mark the visited vertices
 
-bool IsValid(int x, int y) {
-    return x >= 0 && x < w && y >= 0 && y < h;
+bool isValid(int x, int y, int w, int h) {
+    return x >= 0 && x < h && y >= 0 && y < w;
 }
 
-char* findCityName(char country[][h], int x, int y) {
+char* findCityName(char** country, int x, int y, int w, int h) {
     int dx[] = {-1, -1, -1, 0, 0, 1, 1, 1};
     int dy[] = {-1, 0, 1, -1, 1, -1, 0, 1};
     char* cityName = (char*) malloc( sizeof(char));
 
     for (int i = 0; i < 8; i++) {
         int nx = x + dx[i], ny = y + dy[i];
-        if (IsValid(nx, ny) && isalpha(country[nx][ny])) {
-            for(int j = nx; j >= 0; j--){
+        if (isValid(nx, ny, w, h) && isalpha(country[nx][ny])) {
+            for(int j = ny; j >= 0; j--){
                 if(country[nx][j] == '.' || country[nx][j] == '#'){
                     int startCityName = j +1;
                     for(int k = startCityName, l = 0; k < w; k++, l++){
                         if(isalpha(country[nx][k])){
                             cityName = (char*)realloc(cityName, l + 1 * sizeof(char));
                             cityName[l] = country[nx][k];
+                            cout<< "city: " << cityName << "row: " <<  nx << "l: " << l << "k: " << k << "len: " << strlen(cityName) << std::endl;
                         }
                     }
+                    // trim(cityName);
+                    return cityName;
                 }
             }
         }
     }
-    return cityName;
+    return nullptr;
 }
 
-int** prepareAdjTable(char country[][h], int numberOfCities){
+int** prepareAdjTable(char** country, int numberOfCities, int w, int h){
     int** adjTable = (int**) malloc(numberOfCities * sizeof(int*));
     for (int i = 0; i < numberOfCities; i++) {
         adjTable[i] = (int*) malloc(numberOfCities * sizeof(int));
@@ -48,15 +49,8 @@ int** prepareAdjTable(char country[][h], int numberOfCities){
 
     for(int i =0; i < h; ++i) {
         for (int j = 0; j < w; ++j) {
-            cout << country[i][j];
-        }
-        cout << "\n";
-    }
-
-    for(int i =0; i < w; ++i) {
-        for (int j = 0; j < h; ++j) {
             if(country[i][j] == '*') {
-                auto city = findCityName(country, i, j);
+                auto city = findCityName(country, i, j, w, h);
                 cout << city << std::endl;
             }
 
@@ -105,10 +99,15 @@ void dijkstra(int start) {
 }
 
 int main() {
+    int w = 0;
+    int h = 0;
 
     cin>> w >> h;
 
-    char country[w][h];
+    char** country = (char**) malloc(h * sizeof(char*));
+    for (int i = 0; i < h; i++) {
+        country[i] = (char*) malloc(w * sizeof(char));
+    }
     int numberCities = 0;
 
     for(int i =0; i < h; ++i) {
@@ -119,18 +118,7 @@ int main() {
         }
     }
 
-  /*  for(int i =0; i < h; ++i) {
-        for (int j = 0; j < w; ++j) {
-            cout << country[i][j];
-            }
-        cout << "\n";
-        }
-
-   */ cout << "1";
-
-    auto adjTable = prepareAdjTable(country, numberCities);
-
-    cout << "2";
+    auto adjTable = prepareAdjTable(country, numberCities, w, h);
 
     // Read input
     int n, m;
