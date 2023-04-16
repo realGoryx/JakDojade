@@ -120,6 +120,8 @@ int main() {
 
     auto adjTable = prepareAdjTable(country, numberCities, w, h);
 
+    auto adjTable2 = prepareAdjTable(country, 2, w, h );
+
     // Read input
     int n, m;
     cin >> n >> m;
