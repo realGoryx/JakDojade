@@ -123,7 +123,7 @@ int main() {
     auto adjTable2 = prepareAdjTable(country, 2, w, h );
 
     // Read input
-    int n, m;
+    /* int n, m;
     cin >> n >> m;
     for (int i = 0; i < m; i++) {
         int u, v, w;
@@ -142,6 +142,9 @@ int main() {
         cout << dist[i] << " ";
     }
     cout << endl;
-
+    */
+    free(country);
+    free(adjTable);
+    free(adjTable2);
     return 0;
 }
