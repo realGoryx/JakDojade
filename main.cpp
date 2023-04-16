@@ -14,6 +14,39 @@ bool isValid(int x, int y, int w, int h) {
     return x >= 0 && x < h && y >= 0 && y < w;
 }
 
+int bfs(int startX, int startY, int targetX, int targetY) {
+    vector<vector<bool>> visited(MAX_ROWS, vector<bool>(MAX_COLS, false));
+    queue<pair<int, int>> q;
+    q.push({ startX, startY });
+    int distance = 0;
+
+    while (!q.empty()) {
+        int qSize = q.size();
+        for (int i = 0; i < qSize; ++i) {
+            int x = q.front().first;
+            int y = q.front().second;
+            q.pop();
+
+            if (x == targetX && y == targetY) {
+                return distance;
+            }
+
+            for (auto dir : directions) {
+                int newX = x + dir.first;
+                int newY = y + dir.second;
+
+                if (isValid(newX, newY) && !visited[newX][newY] && (grid[newX][newY] == '#' || grid[newX][newY] == '*')) {
+                    visited[newX][newY] = true;
+                    q.push({ newX, newY });
+                }
+            }
+        }
+        distance++;
+    }
+
+    return -1;
+}
+
 char* findCityName(char** country, int x, int y, int w, int h) {
     int dx[] = { -1, -1, -1, 0, 0, 1, 1, 1 };
     int dy[] = { -1, 0, 1, -1, 1, -1, 0, 1 };
