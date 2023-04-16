@@ -4,7 +4,7 @@
 using namespace std;
 
 const int MAXN = 10000;
-const int INF = 1e9;
+const int INF = 19;
 
 int adj[MAXN][MAXN]; // adjacency matrix representation
 int dist[MAXN]; // distance array to store the minimum distance from source to all vertices
@@ -51,7 +51,7 @@ int** prepareAdjTable(char** country, int numberOfCities, int w, int h) {
         for (int j = 0; j < w; ++j) {
             if (country[i][j] == '*') {
                 auto city = findCityName(country, i, j, w, h);
-                cout << city << std::endl;
+   //             cout << city << std::endl;
             }
 
         }
