@@ -139,6 +139,7 @@ int bfs(char** country, Point* previous, int startX, int startY, int targetX, in
                     visited[newX][newY] = true;
                     if(country[newX][newY] == '*'){
                         previous[newX * w + newY] = {x , y};
+                        // TODO: figure out when to add path
                     }
                     enqueue(&q, {newX, newY});
                 }
