@@ -1,7 +1,6 @@
 #include <iostream>
 #include <cctype>
 #include <cstring>
-#include <stdbool.h>
 using namespace std;
 
 const int MAX_VERTICES = 10000;
@@ -112,7 +111,7 @@ void freeVisitedArray(bool** visited, int h) {
     free(visited);
 }
 
-int bfs(char** country, int startX, int startY, int targetX, int targetY, int w, int h) {
+int bfs(char** country, Point* previous, int startX, int startY, int targetX, int targetY, int w, int h) {
     Point directions[4] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
     bool** visited = createVisitedArray(w, h);
 
@@ -138,6 +137,9 @@ int bfs(char** country, int startX, int startY, int targetX, int targetY, int w,
                 if (isValid(newX, newY, w, h) && !visited[newX][newY] &&
                     (country[newX][newY] == '#' || country[newX][newY] == '*')) {
                     visited[newX][newY] = true;
+                    if(country[newX][newY] == '*'){
+                        previous[newX * w + newY] = {x , y};
+                    }
                     enqueue(&q, {newX, newY});
                 }
             }
@@ -148,7 +150,7 @@ int bfs(char** country, int startX, int startY, int targetX, int targetY, int w,
     return -1; 
 }
 
-City* prepareAdjTable(char** country, int numberOfCities, int w, int h) {
+City* getCities(char** country, int numberOfCities, int w, int h) {
     City* cities = (City*) malloc(numberOfCities * sizeof(City));
 
     if (cities == nullptr) {
@@ -176,6 +178,30 @@ City* prepareAdjTable(char** country, int numberOfCities, int w, int h) {
     return cities;
 }
 
+void reconstructPath(int startX, int startY, int targetX, int targetY, int w, int numOfCities, City* cities,  Point* previous){
+    Point* path = (Point*)malloc(numOfCities * sizeof(Point));
+    for(int i = 0; i < numOfCities; i++){
+        path[i] = {-1, -1};
+    }
+    Point current = {targetX, targetY};
+    int counter = 0;
+    while(!(current.x == startX && current.y == startY)){
+        path[counter] = current;
+        current = previous[current.x *w + current.y];
+        counter++;
+    }
+    path[counter] = {startX, startY};
+    for(int i = numOfCities -2; i > 0; i++){
+        if(path[i].x != -1 && path[i].y != -1){
+            for(int j = 0; j < numOfCities; j++){
+                if(path[i].x == cities[j].cords.x && path[i].y == cities[j].cords.y){
+                    cout << " " << cities[j].name;
+                }
+            }
+        }
+    }
+}
+
 int main() {
     const int maxCityName = 100;
     int w = 0;
@@ -197,7 +223,8 @@ int main() {
         }
     }
 
-    City* cities = prepareAdjTable(country, numberCities, w, h);
+    City* cities = getCities(country, numberCities, w, h);
+    Point* previous = (Point*)malloc(w * h * sizeof (Point));
 
     int** adjTable = (int**)malloc(numberCities * sizeof(int*));
     for (int i = 0; i < numberCities; i++) {
@@ -212,15 +239,9 @@ int main() {
 
     for (int i = 0; i < numberCities; ++i) {
         for (int j = i + 1; j < numberCities; ++j) {
-            auto dist = bfs(country, cities[i].cords.x, cities[i].cords.y, cities[j].cords.x, cities[j].cords.y, w, h );
+            auto dist = bfs(country, previous, cities[i].cords.x, cities[i].cords.y, cities[j].cords.x, cities[j].cords.y, w, h );
             adjTable[i][j] = dist;
             adjTable[j][i] = dist;
-        }
-    }
-
-    for(int i = 0; i < numberCities; i++){
-        for(int j = 0; j < numberCities; j++){
-            cout<< i << " " << j << " " << adjTable[i][j] << endl;
         }
     }
 
@@ -265,11 +286,14 @@ int main() {
             cout << adjTable[sourceCityIndex][targetCityIndex] << endl;
         }
         else if (qIdentifier == 1){
-            cout << adjTable[sourceCityIndex][targetCityIndex] /*implement path reconstruction*/ << endl;
+            cout << adjTable[sourceCityIndex][targetCityIndex];
+            reconstructPath(cities[sourceCityIndex].cords.x, cities[sourceCityIndex].cords.y, cities[targetCityIndex].cords.x, cities[targetCityIndex].cords.y, w, numberCities, cities, previous);
+            cout << endl; // TODO: building previous with paths need to be fixed
         }
     }
 
     free(country);
     free(cities);
+    free(previous);
     return 0;
 }
