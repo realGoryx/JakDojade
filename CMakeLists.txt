@@ -3,4 +3,4 @@ project(JakDojade)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(JakDojade main.cpp cmake-build-debug/Tempt.cpp cmake-build-debug/Tempt.h)
+add_executable(JakDojade main.cpp)
