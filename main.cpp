@@ -72,7 +72,7 @@ char* findCityName(char** country, int x, int y, int w, int h) {
         if (isValid(nx, ny, w, h) && isalpha(country[nx][ny])) {
             int startCityName = -1;
             for (int j = ny; j >= 0; j--) {
-                if (country[nx][j] == '.' || country[nx][j] == '#') {
+                if (country[nx][j] == '.' || country[nx][j] == '#' || country[nx][j] == '*') {
                     startCityName = j + 1;
                     break;
                 }
