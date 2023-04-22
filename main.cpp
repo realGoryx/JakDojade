@@ -5,9 +5,15 @@ using namespace std;
 
 const int MAX_VERTICES = 10000;
 
-struct Point{
+struct Point {
     int x;
     int y;
+};
+
+struct CityPath {
+    Point start;
+    Point stop;
+    Point* path;
 };
 
 struct City {
@@ -15,24 +21,34 @@ struct City {
     Point cords;
 };
 
-struct Queue{
+struct Queue {
     int front;
     int rear;
     Point data[MAX_VERTICES];
 };
 
-void initQueue(Queue *q) {
+void initCityPath(CityPath* cp, int numberCities, Point start, Point stop) {
+    cp->start = start;
+    cp->stop = stop;
+    cp->path = (Point*)malloc(numberCities * sizeof(Point));
+    for (int i = 0; i < numberCities; i++) {
+        cp->path[i].x = -1;
+        cp->path[i].y = -1;
+    }
+}
+
+void initQueue(Queue* q) {
     q->front = -1;
     q->rear = -1;
 }
 
-bool isEmpty(Queue *q) {
+bool isEmpty(Queue* q) {
     return q->front == -1;
 }
 
-void enqueue(Queue *q, Point p) {
+void enqueue(Queue* q, Point p) {
     if (q->rear == MAX_VERTICES - 1) {
-        cout<<"Queue overflow\n";
+        cout << "Queue overflow\n";
         return;
     }
     if (q->front == -1) {
@@ -42,17 +58,18 @@ void enqueue(Queue *q, Point p) {
     q->data[q->rear] = p;
 }
 
-Point dequeue(Queue *q) {
+Point dequeue(Queue* q) {
     if (isEmpty(q)) {
         cout << "Queue underflow\n";
-        Point invalid_point = {-1, -1};
+        Point invalid_point = { -1, -1 };
         return invalid_point;
     }
     Point p = q->data[q->front];
     if (q->front == q->rear) {
         q->front = -1;
         q->rear = -1;
-    } else {
+    }
+    else {
         q->front++;
     }
     return p;
@@ -83,7 +100,8 @@ char* findCityName(char** country, int x, int y, int w, int h) {
                     if (isalpha(country[nx][k])) {
                         cityName[charPos] = country[nx][k];
                         charPos++;
-                    } else {
+                    }
+                    else {
                         break;
                     }
                 }
@@ -111,16 +129,21 @@ void freeVisitedArray(bool** visited, int h) {
     free(visited);
 }
 
-int bfs(char** country, Point* previous, int startX, int startY, int targetX, int targetY, int w, int h) {
-    Point directions[4] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+int bfs(char** country, CityPath* previous, int pathIndex, int startX, int startY, int targetX, int targetY, int w, int h, int numbCities) {
+    Point directions[4] = { {-1, 0}, {1, 0}, {0, -1}, {0, 1} };
     bool** visited = createVisitedArray(w, h);
+    CityPath* initPath = (CityPath*)malloc(sizeof(CityPath));
+    initCityPath(initPath, numbCities, { startX, startY }, { targetX, targetY });
+    previous[pathIndex] = *initPath;
 
     Queue q;
     initQueue(&q);
-    enqueue(&q, {startX, startY});
+    enqueue(&q, { startX, startY });
     visited[startX][startY] = true;
 
     int level = 0;
+    int cityPathCounter = 0;
+    bool isCity = false;
     while (!isEmpty(&q)) {
         int levelSize = q.rear - q.front + 1; // number of points at current level
         for (int i = 0; i < levelSize; i++) {
@@ -137,22 +160,27 @@ int bfs(char** country, Point* previous, int startX, int startY, int targetX, in
                 if (isValid(newX, newY, w, h) && !visited[newX][newY] &&
                     (country[newX][newY] == '#' || country[newX][newY] == '*')) {
                     visited[newX][newY] = true;
-                    if(country[newX][newY] == '*'){
-                        previous[newX * w + newY] = {x , y};
+                    if (country[newX][newY] == '*') {
+                        previous[pathIndex].path[cityPathCounter] = { newX , newY };
+                        isCity = true;
                         // TODO: figure out when to add path
                     }
-                    enqueue(&q, {newX, newY});
+                    enqueue(&q, { newX, newY });
                 }
             }
         }
         level++;
+        if (isCity == true) {
+            cityPathCounter++;
+            isCity = false;
+        }
     }
     freeVisitedArray(visited, h);
-    return -1; 
+    return -1;
 }
 
 City* getCities(char** country, int numberOfCities, int w, int h) {
-    City* cities = (City*) malloc(numberOfCities * sizeof(City));
+    City* cities = (City*)malloc(numberOfCities * sizeof(City));
 
     if (cities == nullptr) {
         return nullptr;
@@ -165,7 +193,7 @@ City* getCities(char** country, int numberOfCities, int w, int h) {
                 char* city = findCityName(country, i, j, w, h);
                 if (city != nullptr) {
                     cities[cityCounter].name = city;
-                    cities[cityCounter].cords = {i, j};
+                    cities[cityCounter].cords = { i, j };
                     cityCounter++;
                 }
             }
@@ -173,29 +201,29 @@ City* getCities(char** country, int numberOfCities, int w, int h) {
     }
 
     if (cityCounter < numberOfCities) {
-        cities = (City*) realloc(cities, cityCounter * sizeof(City));
+        cities = (City*)realloc(cities, cityCounter * sizeof(City));
     }
 
     return cities;
 }
 
-void reconstructPath(int startX, int startY, int targetX, int targetY, int w, int numOfCities, City* cities,  Point* previous){
+void reconstructPath(int startX, int startY, int targetX, int targetY, int w, int numOfCities, City* cities, Point* previous) {
     Point* path = (Point*)malloc(numOfCities * sizeof(Point));
-    for(int i = 0; i < numOfCities; i++){
-        path[i] = {-1, -1};
+    for (int i = 0; i < numOfCities; i++) {
+        path[i] = { -1, -1 };
     }
-    Point current = {targetX, targetY};
+    Point current = { targetX, targetY };
     int counter = 0;
-    while(!(current.x == startX && current.y == startY)){
+    while (!(current.x == startX && current.y == startY)) {
         path[counter] = current;
-        current = previous[current.x *w + current.y];
+        current = previous[current.x * w + current.y];
         counter++;
     }
-    path[counter] = {startX, startY};
-    for(int i = numOfCities -2; i > 0; i++){
-        if(path[i].x != -1 && path[i].y != -1){
-            for(int j = 0; j < numOfCities; j++){
-                if(path[i].x == cities[j].cords.x && path[i].y == cities[j].cords.y){
+    path[counter] = { startX, startY };
+    for (int i = numOfCities - 2; i > 0; i++) {
+        if (path[i].x != -1 && path[i].y != -1) {
+            for (int j = 0; j < numOfCities; j++) {
+                if (path[i].x == cities[j].cords.x && path[i].y == cities[j].cords.y) {
                     cout << " " << cities[j].name;
                 }
             }
@@ -210,9 +238,9 @@ int main() {
 
     cin >> w >> h;
 
-    char **country = (char **) malloc(h * sizeof(char *));
+    char** country = (char**)malloc(h * sizeof(char*));
     for (int i = 0; i < h; i++) {
-        country[i] = (char *) malloc(w * sizeof(char));
+        country[i] = (char*)malloc(w * sizeof(char));
     }
     int numberCities = 0;
 
@@ -225,25 +253,44 @@ int main() {
     }
 
     City* cities = getCities(country, numberCities, w, h);
-    Point* previous = (Point*)malloc(w * h * sizeof (Point));
+    //Point* previous = (Point*)malloc(w * h * sizeof (Point));
+    CityPath* previous = (CityPath*)malloc(numberCities * numberCities * sizeof(CityPath));
 
     int** adjTable = (int**)malloc(numberCities * sizeof(int*));
     for (int i = 0; i < numberCities; i++) {
-        adjTable[i] = (int*) malloc(numberCities * sizeof(int));
+        adjTable[i] = (int*)malloc(numberCities * sizeof(int));
     }
 
-    for(int i = 0; i < numberCities; ++i){
-        for(int j = 0; j < numberCities; ++j){
+    for (int i = 0; i < numberCities; ++i) {
+        for (int j = 0; j < numberCities; ++j) {
             adjTable[i][i] = 0;
         }
     }
 
+    int pathCounter = 0;
     for (int i = 0; i < numberCities; ++i) {
         for (int j = i + 1; j < numberCities; ++j) {
-            auto dist = bfs(country, previous, cities[i].cords.x, cities[i].cords.y, cities[j].cords.x, cities[j].cords.y, w, h );
+            auto dist = bfs(country, previous, pathCounter, cities[i].cords.x, cities[i].cords.y, cities[j].cords.x, cities[j].cords.y, w, h, numberCities);
             adjTable[i][j] = dist;
-            adjTable[j][i] = dist;
+            //adjTable[j][i] = dist;
+            pathCounter++;
         }
+    }
+
+    for (int i = numberCities - 1; i >= 0; --i) {
+        for (int j = numberCities - 2; j >= 0; --j) {
+            auto dist = bfs(country, previous, pathCounter, cities[i].cords.x, cities[i].cords.y, cities[j].cords.x, cities[j].cords.y, w, h, numberCities);
+            adjTable[i][j] = dist;
+            pathCounter++;
+        }
+    }
+
+    for (int i = 0; i < pathCounter; i++) {
+        cout << previous[i].start.x << " " << previous[i].start.y << " " << previous[i].stop.x << " " << previous[i].stop.y << " ";
+        for (int j = 0; j < numberCities; j++) {
+            cout << previous[i].path[j].x << " " << previous[i].path[j].y << " ";
+        }
+        cout << endl;
     }
 
     int k = 0;
@@ -254,14 +301,14 @@ int main() {
     int flightTime;
     int sourceCityIndex = -1;
     int targetCityIndex = -1;
-    for(int i = 0; i < k; i++){
+    for (int i = 0; i < k; i++) {
         cin >> sourceCity >> targetCity >> flightTime;
 
-        for(int i = 0; i < numberCities; i++){
-            if(strcmp(cities[i].name, sourceCity) == 0){
+        for (int i = 0; i < numberCities; i++) {
+            if (strcmp(cities[i].name, sourceCity) == 0) {
                 sourceCityIndex = i;
             }
-            if(strcmp(cities[i].name, targetCity) == 0){
+            if (strcmp(cities[i].name, targetCity) == 0) {
                 targetCityIndex = i;
             }
         }
@@ -272,23 +319,23 @@ int main() {
     int questions = 0;
     int qIdentifier = -1;
     cin >> questions;
-    for(int i = 0; i < questions; i++){
+    for (int i = 0; i < questions; i++) {
         cin >> sourceCity >> targetCity >> qIdentifier;
-        for(int j = 0; j < numberCities; j++){
-            if(strcmp(cities[j].name, sourceCity) == 0){
+        for (int j = 0; j < numberCities; j++) {
+            if (strcmp(cities[j].name, sourceCity) == 0) {
                 sourceCityIndex = j;
             }
-            if(strcmp(cities[j].name, targetCity) == 0){
+            if (strcmp(cities[j].name, targetCity) == 0) {
                 targetCityIndex = j;
             }
         }
 
-        if(qIdentifier == 0){
+        if (qIdentifier == 0) {
             cout << adjTable[sourceCityIndex][targetCityIndex] << endl;
         }
-        else if (qIdentifier == 1){
+        else if (qIdentifier == 1) {
             cout << adjTable[sourceCityIndex][targetCityIndex];
-            reconstructPath(cities[sourceCityIndex].cords.x, cities[sourceCityIndex].cords.y, cities[targetCityIndex].cords.x, cities[targetCityIndex].cords.y, w, numberCities, cities, previous);
+            //reconstructPath(cities[sourceCityIndex].cords.x, cities[sourceCityIndex].cords.y, cities[targetCityIndex].cords.x, cities[targetCityIndex].cords.y, w, numberCities, cities, previous);
             cout << endl; // TODO: building previous with paths need to be fixed
         }
     }
