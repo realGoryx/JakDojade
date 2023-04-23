@@ -97,6 +97,10 @@ char* findCityName(char** country, int x, int y, int w, int h) {
                     startCityName = j + 1;
                     break;
                 }
+                else if (ny == 0) {
+                    startCityName = 0;
+                    break;
+                }
             }
             if (startCityName != -1) {
                 int charPos = 0;
@@ -323,21 +327,6 @@ int main() {
             pathCounter++;
         }
     }
-
-//    for(int i = 0; i < pathCounter; i++){
-//        cout << "Travel: " << cityPaths[i].start.x << " " << cityPaths[i].start.y << " " << cityPaths[i].stop.x << " " << cityPaths[i].stop.y << "\n";
-//        for(int j =0 ; j < cityPaths[i].pathLength; i++){
-//            cout << "Path: " << cityPaths[i].path[j].x << " " << cityPaths[i].path[j].y << endl;
-//        }
-//    }
-
-    /*for (int i = 0; i < pathCounter; i++) {
-        cout << cityPaths[i].start.x << " " << cityPaths[i].start.y << " " << cityPaths[i].stop.x << " " << cityPaths[i].stop.y << " ";
-        for (int j = 0; j < cityPaths[i].pathLength; j++) {
-            cout << cityPaths[i].path[j].x << " " << cityPaths[i].path[j].y << " ";
-        }
-        cout << endl;
-    }*/
 
     int k = 0;
     cin >> k;
