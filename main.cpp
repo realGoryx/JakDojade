@@ -111,7 +111,7 @@ void dfs(char** country, int sourceX, int sourceY, int targetX, int targetY, int
 		dfs(country, sourceX - 1, sourceY, targetX, targetY, steps + 1, minSteps, originalChar, w, h);
 		dfs(country, sourceX, sourceY + 1, targetX, targetY, steps + 1, minSteps, originalChar, w, h);
 		dfs(country, sourceX, sourceY - 1, targetX, targetY, steps + 1, minSteps, originalChar, w, h);
-		country[sourceX][sourceY] = prev;
+		country[sourceX][sourceY] = originalChar;
 	}
 }
 
@@ -153,6 +153,7 @@ int dijkstra(bool trackpath, Edge* edges, int numCities, int edgeCount, int sour
 			}
 		}
 	}
+	
 	if (trackpath) {
 		int pathIndex = 0;
 		for (int at = dest; at != -1; at = predecessor[at]) {
@@ -166,7 +167,13 @@ int dijkstra(bool trackpath, Edge* edges, int numCities, int edgeCount, int sour
 		}
 	}
 
-	return dist[dest];
+	int result = dist[dest];
+
+	free(dist);
+	free(visited);
+	free(predecessor);
+
+	return result;
 }
 
 void showpath(int* path, City* cities, int numCities) {
@@ -212,7 +219,7 @@ int main() {
 			}
 		}
 	}
-
+	
 	int k = 0;
 	cin >> k;
 
@@ -271,7 +278,11 @@ int main() {
 		}
 	}
 
+	for (int i = 0; i < h; i++) {
+		free(country[i]);
+	}
 	free(country);
 	free(cities);
+	free(edges);
 	return 0;
 }
