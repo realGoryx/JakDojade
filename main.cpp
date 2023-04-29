@@ -22,8 +22,68 @@ struct City {
 	Point cords;
 };
 
+struct Queue {
+	int front;
+	int rear;
+	Point data[MAX_VERTICES];
+};
+
+void initQueue(Queue* q) {
+	q->front = -1;
+	q->rear = -1;
+}
+
+bool isEmpty(Queue* q) {
+	return q->front == -1;
+}
+
+void enqueue(Queue* q, Point p) {
+	if (q->rear == MAX_VERTICES - 1) {
+		cout << "Queue overflow\n";
+		return;
+	}
+	if (q->front == -1) {
+		q->front = 0;
+	}
+	q->rear++;
+	q->data[q->rear] = p;
+}
+
+Point dequeue(Queue* q) {
+	if (isEmpty(q)) {
+		cout << "Queue underflow\n";
+		Point invalid_point = { -1, -1 };
+		return invalid_point;
+	}
+	Point p = q->data[q->front];
+	if (q->front == q->rear) {
+		q->front = -1;
+		q->rear = -1;
+	}
+	else {
+		q->front++;
+	}
+	return p;
+}
+
 bool isValid(int x, int y, int w, int h) {
 	return x >= 0 && x < h && y >= 0 && y < w;
+}
+
+bool** createVisitedArray(int w, int h) {
+	bool** visited = (bool**)malloc(h * sizeof(bool*));
+	for (int i = 0; i < h; i++) {
+		visited[i] = (bool*)malloc(w * sizeof(bool));
+		memset(visited[i], 0, w * sizeof(bool));
+	}
+	return visited;
+}
+
+void freeVisitedArray(bool** visited, int h) {
+	for (int i = 0; i < h; i++) {
+		free(visited[i]);
+	}
+	free(visited);
 }
 
 char* findCityName(char** country, int x, int y, int w, int h) {
@@ -92,28 +152,119 @@ City* getCities(char** country, int numberOfCities, int w, int h) {
 	return cities;
 }
 
-void dfs(char** country, int sourceX, int sourceY, int targetX, int targetY, int steps, int* minSteps, char prev, int w, int h) {
-	if (sourceX < 0 || sourceY < 0 || sourceX >= h || sourceY >= w || country[sourceX][sourceY] == '.' || isalpha(country[sourceX][sourceY])) {
-		return;
-	}
+int bfs(char** country, int startX, int startY, int targetX, int targetY, const int w, const int h) {
+	Point directions[4] = { {-1, 0}, {1, 0}, {0, -1}, {0, 1} };
+	bool** visited = createVisitedArray(w, h);
 
-	if (sourceX == targetX && sourceY == targetY) {
-		if (steps < *minSteps) {
-			*minSteps = steps;
+	Queue q;
+	initQueue(&q);
+	enqueue(&q, { startX, startY });
+	visited[startX][startY] = true;
+
+	int level = 0;
+
+
+	bool isCity = false;
+	while (!isEmpty(&q)) {
+		int levelSize = q.rear - q.front + 1; // number of points at current level
+		for (int i = 0; i < levelSize; i++) {
+			Point p = dequeue(&q);
+			int x = p.x;
+			int y = p.y;
+			if (x != startX && y != startY && x != targetX && y != targetY
+				&& country[x][y] == '*') {
+				for (int j = 0; j < 4; j++) {
+					int markX = x + directions[j].x;
+					int markY = y + directions[j].y;
+					if (isValid(markX, markY, w, h)) {
+						visited[markX][markY] = true;
+					}
+				}
+			}
+			else if (x == targetX && y == targetY) {
+				freeVisitedArray(visited, h);
+				return level;
+			}
+			for (int j = 0; j < 4; j++) {
+				int newX = x + directions[j].x;
+				int newY = y + directions[j].y;
+				if (isValid(newX, newY, w, h) && !visited[newX][newY] &&
+					(country[newX][newY] == '#' || country[newX][newY] == '*')) {
+					visited[newX][newY] = true;
+					enqueue(&q, { newX, newY });
+					//if (country[newX][newY] == '*') {
+					//	isCity = true;
+					//	initQueue(&q);
+					//	enqueue(&q, { newX, newY });
+					//	level++;
+					//	break;
+					//}
+				}
+			}
 		}
-		return;
+		level++;
 	}
-
-	if (country[sourceX][sourceY] == '#' || country[sourceX][sourceY] == '*') {
-		char originalChar = country[sourceX][sourceY];
-		country[sourceX][sourceY] = 'V';
-		dfs(country, sourceX + 1, sourceY, targetX, targetY, steps + 1, minSteps, originalChar, w, h);
-		dfs(country, sourceX - 1, sourceY, targetX, targetY, steps + 1, minSteps, originalChar, w, h);
-		dfs(country, sourceX, sourceY + 1, targetX, targetY, steps + 1, minSteps, originalChar, w, h);
-		dfs(country, sourceX, sourceY - 1, targetX, targetY, steps + 1, minSteps, originalChar, w, h);
-		country[sourceX][sourceY] = originalChar;
-	}
+	freeVisitedArray(visited, h);
+	return -1;
 }
+//void dfs(char** country, int sourceX, int sourceY, int targetX, int targetY, int steps, int* minSteps, char prev, int w, int h) {
+//	if (sourceX < 0 || sourceY < 0 || sourceX >= h || sourceY >= w || country[sourceX][sourceY] == '.' || isalpha(country[sourceX][sourceY])) {
+//		return;
+//	}
+//
+//	if (sourceX == targetX && sourceY == targetY) {
+//		if (steps < *minSteps) {
+//			*minSteps = steps;
+//		}
+//		return;
+//	}
+//
+//	if (country[sourceX][sourceY] == '#' || country[sourceX][sourceY] == '*') {
+//		char originalChar = country[sourceX][sourceY];
+//		country[sourceX][sourceY] = 'V';
+//		dfs(country, sourceX + 1, sourceY, targetX, targetY, steps + 1, minSteps, originalChar, w, h);
+//		dfs(country, sourceX - 1, sourceY, targetX, targetY, steps + 1, minSteps, originalChar, w, h);
+//		dfs(country, sourceX, sourceY + 1, targetX, targetY, steps + 1, minSteps, originalChar, w, h);
+//		dfs(country, sourceX, sourceY - 1, targetX, targetY, steps + 1, minSteps, originalChar, w, h);
+//		country[sourceX][sourceY] = originalChar;
+//	}
+//}
+//
+//bool isDirectConnection(char** country, int sourceX, int sourceY, int targetX, int targetY, int w, int h, int* weight) {
+//	if (sourceX == targetX) {
+//		int start = sourceY < targetY ? sourceY : targetY;
+//		int end = sourceY > targetY ? sourceY : targetY;
+//		int count = 0;
+//		for (int i = start + 1; i < end; i++) {
+//			if (country[sourceX][i] != '#' && country[sourceX][i] != '*') {
+//				return false;
+//			}
+//			if (country[sourceX][i] == '#') {
+//				count++;
+//			}
+//		}
+//		*weight = count;
+//	}
+//	else if (sourceY == targetY) {
+//		int start = sourceX < targetX ? sourceX : targetX;
+//		int end = sourceX > targetX ? sourceX : targetX;
+//		int count = 0;
+//		for (int i = start + 1; i < end; i++) {
+//			if (country[i][sourceY] != '#' && country[i][sourceY] != '*') {
+//				return false;
+//			}
+//			if (country[i][sourceY] == '#') {
+//				count++;
+//			}
+//		}
+//		*weight = count;
+//	}
+//	else {
+//		return false;
+//	}
+//
+//	return true;
+//}
 
 int dijkstra(bool trackpath, Edge* edges, int numCities, int edgeCount, int source, int dest, int* path) {
 	int* dist = (int*)malloc(numCities * sizeof(int));
@@ -153,7 +304,7 @@ int dijkstra(bool trackpath, Edge* edges, int numCities, int edgeCount, int sour
 			}
 		}
 	}
-	
+
 	if (trackpath) {
 		int pathIndex = 0;
 		for (int at = dest; at != -1; at = predecessor[at]) {
@@ -176,9 +327,11 @@ int dijkstra(bool trackpath, Edge* edges, int numCities, int edgeCount, int sour
 	return result;
 }
 
-void showpath(int* path, City* cities, int numCities) {
+// 6 4 1 -1 0 -1 -1
+
+void showpath(int* path, City* cities, char* targetCity, int numCities) {
 	for (int i = 1; i < numCities - 1; i++) {
-		if (path[i] > -1) {
+		if (path[i] > -1 && strcmp(cities[path[i]].name, targetCity) != 0) {
 			cout << " " << cities[path[i]].name;
 		}
 	}
@@ -190,6 +343,7 @@ int main() {
 	int h = 0;
 
 	cin >> w >> h;
+
 
 	char** country = (char**)malloc(h * sizeof(char*));
 	for (int i = 0; i < h; i++) {
@@ -206,20 +360,60 @@ int main() {
 	}
 
 	City* cities = getCities(country, numberCities, w, h);
-	Edge* edges = (Edge*)malloc((numberCities * (numberCities - 1) / 2) * sizeof(Edge));
+	Edge* edges = (Edge*)malloc(numberCities * (numberCities - 1) * sizeof(Edge));
+	for (int i = 0; i < numberCities * (numberCities - 1); i++) {
+		edges[i].weight = - 1;
+	}
 	int edgeCount = 0;
+	//for (int i = 0; i < numberCities; i++) {
+	//	for (int j = i + 1; j < numberCities; j++) {
+	//		int minSteps = INF;
+	//		dfs(country, cities[i].cords.x, cities[i].cords.y, cities[j].cords.x, cities[j].cords.y, 0, &minSteps, country[cities[i].cords.x][cities[i].cords.y], w, h);
+
+	//		if (minSteps != INF) {
+	//			edges[edgeCount++] = { i, j, minSteps };
+	//			edges[edgeCount++] = { j, i, minSteps };
+	//		}
+	//	}
+	//}
+
 	for (int i = 0; i < numberCities; i++) {
 		for (int j = i + 1; j < numberCities; j++) {
-			int minSteps = INF;
-			dfs(country, cities[i].cords.x, cities[i].cords.y, cities[j].cords.x, cities[j].cords.y, 0, &minSteps, country[cities[i].cords.x][cities[i].cords.y], w, h);
+			int minSteps = 0;
+			minSteps = bfs(country, cities[i].cords.x, cities[i].cords.y, cities[j].cords.x, cities[j].cords.y, w, h);
 
-			if (minSteps != INF) {
+			if (minSteps != -1 ) {
 				edges[edgeCount++] = { i, j, minSteps };
 				edges[edgeCount++] = { j, i, minSteps };
 			}
 		}
 	}
-	
+
+	//int aaa = 0;
+	//for (int i = 0; i < edgeCount; i++) {
+	//	cout << " " << edges[i].source << " " << edges[i].dest << " " << edges[i].weight << endl;
+	//	/*if (i == edgeCount / 2) {
+	//		cin >> aaa;
+	//	}*/
+	//}
+
+	//for (int i = 0; i < numberCities; i++) {
+	//	for (int j = i + 1; j < numberCities; j++) {
+	//		int weight = 0;
+	//		if (isDirectConnection(country, cities[i].cords.x, cities[i].cords.y, cities[j].cords.x, cities[j].cords.y, w, h, &weight)) {
+	//			edges[edgeCount].source = i;
+	//			edges[edgeCount].dest = j;
+	//			edges[edgeCount].weight = weight;
+	//			edgeCount++;
+
+	//			edges[edgeCount].source = j;
+	//			edges[edgeCount].dest = i;
+	//			edges[edgeCount].weight = weight;
+	//			edgeCount++;
+	//		}
+	//	}
+	//}
+
 	int k = 0;
 	cin >> k;
 
@@ -272,7 +466,7 @@ int main() {
 				path[i] = -1;
 			}
 			cout << dijkstra(true, edges, numberCities, edgeCount, sourceCityIndex, targetCityIndex, path);
-			showpath(path, cities, numberCities);
+			showpath(path, cities, targetCity, numberCities);
 			cout << endl;
 			free(path);
 		}
