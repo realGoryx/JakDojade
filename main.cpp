@@ -171,7 +171,7 @@ int bfs(char** country, int startX, int startY, int targetX, int targetY, const 
 			Point p = dequeue(&q);
 			int x = p.x;
 			int y = p.y;
-			if (x != startX && y != startY && x != targetX && y != targetY
+			if ((x != startX || y != startY) && (x != targetX || y != targetY)
 				&& country[x][y] == '*') {
 				for (int j = 0; j < 4; j++) {
 					int markX = x + directions[j].x;
@@ -192,13 +192,6 @@ int bfs(char** country, int startX, int startY, int targetX, int targetY, const 
 					(country[newX][newY] == '#' || country[newX][newY] == '*')) {
 					visited[newX][newY] = true;
 					enqueue(&q, { newX, newY });
-					//if (country[newX][newY] == '*') {
-					//	isCity = true;
-					//	initQueue(&q);
-					//	enqueue(&q, { newX, newY });
-					//	level++;
-					//	break;
-					//}
 				}
 			}
 		}
