@@ -332,11 +332,24 @@ int main() {
 		}
 
 		for (int i = 0; i < edgeCount; i++) {
-			if (edges[i].source == sourceCityIndex && edges[i].dest == targetCityIndex) {
-				edges[i].weight = flightTime;
+			if (edges[i].source == sourceCityIndex && edges[i].dest == targetCityIndex){
+					edges[i].weight = flightTime;
+					break;
+			}
+			else if (i == edgeCount - 1) {
+				edges = (Edge*)realloc(edges, (edgeCount + 1) * sizeof(Edge));
+				edges[edgeCount].source = sourceCityIndex;
+				edges[edgeCount].dest = targetCityIndex;
+				edges[edgeCount].weight = flightTime;
+				++edgeCount;
 			}
 		}
 	}
+
+	// uncomment to log adj matrix
+	//for (int i = 0; i < edgeCount; i++) {
+	//	cout << edges[i].source << " " << edges[i].dest << " " << edges[i].weight << endl;
+	//}
 
 	int questions = 0;
 	int qIdentifier = -1;
