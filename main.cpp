@@ -330,19 +330,27 @@ int main() {
 				targetCityIndex = i;
 			}
 		}
-
-		for (int i = 0; i < edgeCount; i++) {
-			if (edges[i].source == sourceCityIndex && edges[i].dest == targetCityIndex){
+		if (edgeCount > 0) {
+			for (int i = 0; i < edgeCount; i++) {
+				if (edges[i].source == sourceCityIndex && edges[i].dest == targetCityIndex) {
 					edges[i].weight = flightTime;
 					break;
+				}
+				else if (i == edgeCount - 1) {
+					edges = (Edge*)realloc(edges, (edgeCount + 1) * sizeof(Edge));
+					edges[edgeCount].source = sourceCityIndex;
+					edges[edgeCount].dest = targetCityIndex;
+					edges[edgeCount].weight = flightTime;
+					++edgeCount;
+				}
 			}
-			else if (i == edgeCount - 1) {
+		}
+		else if (edgeCount == 0) {
 				edges = (Edge*)realloc(edges, (edgeCount + 1) * sizeof(Edge));
 				edges[edgeCount].source = sourceCityIndex;
 				edges[edgeCount].dest = targetCityIndex;
 				edges[edgeCount].weight = flightTime;
 				++edgeCount;
-			}
 		}
 	}
 
