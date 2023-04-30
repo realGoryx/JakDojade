@@ -363,9 +363,9 @@ int main() {
 	}
 
 	// uncomment to log adj matrix
-	for (int i = 0; i < edgeCount; i++) {
-		cout << edges[i].source << " " << edges[i].dest << " " << edges[i].weight << endl;
-	}
+	//for (int i = 0; i < edgeCount; i++) {
+	//	cout << edges[i].source << " " << edges[i].dest << " " << edges[i].weight << endl;
+	//}
 
 
 	int questions = 0;
