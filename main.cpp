@@ -93,7 +93,7 @@ char* findCityName(char** country, int x, int y, int w, int h) {
 
 	for (int i = 0; i < 8; i++) {
 		int nx = x + dx[i], ny = y + dy[i];
-		if (isValid(nx, ny, w, h) && isalpha(country[nx][ny])) {
+		if (isValid(nx, ny, w, h) && (isalpha(country[nx][ny]) || isdigit(country[nx][ny]))) {
 			int startCityName = -1;
 			for (int j = ny; j >= 0; j--) {
 				if (country[nx][j] == '.' || country[nx][j] == '#' || country[nx][j] == '*') {
@@ -108,7 +108,7 @@ char* findCityName(char** country, int x, int y, int w, int h) {
 			if (startCityName != -1) {
 				int charPos = 0;
 				for (int k = startCityName; k < w; k++) {
-					if (isalpha(country[nx][k])) {
+					if (isalpha(country[nx][k]) || isdigit(country[nx][k])) {
 						cityName[charPos] = country[nx][k];
 						charPos++;
 					}
@@ -311,6 +311,12 @@ int main() {
 		}
 	}
 
+	// uncommment print cities
+	//for (int i = 0; i < numberCities; i++) {
+	//	cout << cities[i].name << endl;
+	//}
+	
+
 	int k = 0;
 	cin >> k;
 
@@ -331,12 +337,6 @@ int main() {
 			}
 		}
 
-        for (int i = 0; i < edgeCount; i++) {
-            if (edges[i].source == sourceCityIndex && edges[i].dest == targetCityIndex ||
-                edges[i].source == targetCityIndex && edges[i].dest == sourceCityIndex){
-                edges[i].weight = flightTime;
-            }
-        }
 		if (edgeCount > 0) {
 			for (int i = 0; i < edgeCount; i++) {
 				if (edges[i].source == sourceCityIndex && edges[i].dest == targetCityIndex) {
@@ -349,6 +349,7 @@ int main() {
 					edges[edgeCount].dest = targetCityIndex;
 					edges[edgeCount].weight = flightTime;
 					++edgeCount;
+					
 				}
 			}
 		}
@@ -360,6 +361,12 @@ int main() {
 				++edgeCount;
 		}
 	}
+
+	// uncomment to log adj matrix
+	for (int i = 0; i < edgeCount; i++) {
+		cout << edges[i].source << " " << edges[i].dest << " " << edges[i].weight << endl;
+	}
+
 
 	int questions = 0;
 	int qIdentifier = -1;
