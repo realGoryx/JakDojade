@@ -330,6 +330,7 @@ int main() {
 				targetCityIndex = i;
 			}
 		}
+<<<<<<< HEAD
 
         for (int i = 0; i < edgeCount; i++) {
             if (edges[i].source == sourceCityIndex && edges[i].dest == targetCityIndex ||
@@ -337,6 +338,30 @@ int main() {
                 edges[i].weight = flightTime;
             }
         }
+=======
+		if (edgeCount > 0) {
+			for (int i = 0; i < edgeCount; i++) {
+				if (edges[i].source == sourceCityIndex && edges[i].dest == targetCityIndex) {
+					edges[i].weight = flightTime;
+					break;
+				}
+				else if (i == edgeCount - 1) {
+					edges = (Edge*)realloc(edges, (edgeCount + 1) * sizeof(Edge));
+					edges[edgeCount].source = sourceCityIndex;
+					edges[edgeCount].dest = targetCityIndex;
+					edges[edgeCount].weight = flightTime;
+					++edgeCount;
+				}
+			}
+		}
+		else if (edgeCount == 0) {
+				edges = (Edge*)realloc(edges, (edgeCount + 1) * sizeof(Edge));
+				edges[edgeCount].source = sourceCityIndex;
+				edges[edgeCount].dest = targetCityIndex;
+				edges[edgeCount].weight = flightTime;
+				++edgeCount;
+		}
+>>>>>>> 5e2639876068b726e49dc913e4f6a18ac25fea14
 	}
 
 	int questions = 0;
