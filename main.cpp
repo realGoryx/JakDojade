@@ -330,7 +330,6 @@ int main() {
 				targetCityIndex = i;
 			}
 		}
-<<<<<<< HEAD
 
         for (int i = 0; i < edgeCount; i++) {
             if (edges[i].source == sourceCityIndex && edges[i].dest == targetCityIndex ||
@@ -338,7 +337,6 @@ int main() {
                 edges[i].weight = flightTime;
             }
         }
-=======
 		if (edgeCount > 0) {
 			for (int i = 0; i < edgeCount; i++) {
 				if (edges[i].source == sourceCityIndex && edges[i].dest == targetCityIndex) {
@@ -361,7 +359,6 @@ int main() {
 				edges[edgeCount].weight = flightTime;
 				++edgeCount;
 		}
->>>>>>> 5e2639876068b726e49dc913e4f6a18ac25fea14
 	}
 
 	int questions = 0;
