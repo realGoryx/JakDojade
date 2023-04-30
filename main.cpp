@@ -340,7 +340,7 @@ int main() {
 		if (edgeCount > 0) {
 			for (int i = 0; i < edgeCount; i++) {
 				if (edges[i].source == sourceCityIndex && edges[i].dest == targetCityIndex) {
-					edges[i].weight = flightTime;
+					edges[i].weight = edges[i].weight < flightTime ? edges[i].weight : flightTime;
 					break;
 				}
 				else if (i == edgeCount - 1) {
