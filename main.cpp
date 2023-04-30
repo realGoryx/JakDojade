@@ -331,11 +331,12 @@ int main() {
 			}
 		}
 
-		for (int i = 0; i < edgeCount; i++) {
-			if (edges[i].source == sourceCityIndex && edges[i].dest == targetCityIndex) {
-				edges[i].weight = flightTime;
-			}
-		}
+        for (int i = 0; i < edgeCount; i++) {
+            if (edges[i].source == sourceCityIndex && edges[i].dest == targetCityIndex ||
+                edges[i].source == targetCityIndex && edges[i].dest == sourceCityIndex){
+                edges[i].weight = flightTime;
+            }
+        }
 	}
 
 	int questions = 0;
