@@ -3,8 +3,8 @@
 #include <cstring>
 using namespace std;
 
-const int MAX_VERTICES = 10000;
-const int INF = 1000000;
+const int MAX_VERTICES = 1200000;
+const int INF = 1200000;
 
 struct Edge {
 	int source;
